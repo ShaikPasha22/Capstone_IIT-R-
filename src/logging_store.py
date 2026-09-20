@@ -4,6 +4,7 @@ Governance Framework.
 """
 from __future__ import annotations
 import json
+import os
 import sqlite3
 import threading
 import uuid
@@ -38,6 +39,9 @@ class DecisionLog:
     """
 
     def __init__(self, db_path: str = "./storage/decisions.db"):
+        parent_dir = os.path.dirname(db_path)
+        if parent_dir:
+            os.makedirs(parent_dir, exist_ok=True)
         self.connection = sqlite3.connect(db_path, check_same_thread=False)
         self._lock = threading.Lock()
         with self._lock:
