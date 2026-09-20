@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CloudServe Support Console</title>
+<style>
+  :root {
+    --bg: #0f1420;
+    --panel: #161d2e;
+    --panel-alt: #1c2438;
+    --panel-border: #262f45;
+    --text: #e6e9f2;
+    --muted: #8891a7;
+    --accent: #5b8cff;
+    --good: #2f9e63;
+    --good-bg: #103322;
+    --bad: #d97a2b;
+    --bad-bg: #3a2712;
+    --danger: #d9483f;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--panel-border);
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  header h1 { font-size: 16px; margin: 0; font-weight: 600; }
+  header .sub { color: var(--muted); font-size: 12px; }
+  .kill-switch { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+  .kill-switch .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--good); }
+  .kill-switch.halted .dot { background: var(--danger); }
+  button {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    color: var(--text);
+    padding: 5px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+  }
+  button:hover { border-color: var(--accent); }
+  main { max-width: 1280px; margin: 0 auto; padding: 20px 24px 60px; }
+
+  /* KPI banner */
+  .kpi-banner {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 1px;
+    background: var(--panel-border);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 18px;
+  }
+  .kpi-tile { background: var(--panel-alt); padding: 12px 14px; }
+  .kpi-tile .label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 6px; }
+  .kpi-tile .value { font-size: 20px; font-weight: 700; }
+  @media (max-width: 900px) { .kpi-banner { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 520px) { .kpi-banner { grid-template-columns: repeat(2, 1fr); } }
+
+  .picker-hint { color: var(--muted); font-size: 12px; margin: 0 0 12px; }
+
+  /* three-column workspace */
+  .workspace { display: grid; grid-template-columns: 250px 1.3fr 1fr; gap: 16px; align-items: start; }
+  @media (max-width: 1000px) { .workspace { grid-template-columns: 1fr; } }
+
+  .sidebar { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 10px; padding: 10px; max-height: 80vh; overflow-y: auto; }
+  .sidebar h2 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin: 4px 8px 10px; }
+  .sample-card {
+    border: 1px solid transparent;
+    border-radius: 8px;
+    padding: 9px 10px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 12px;
+  }
+  .sample-card:hover { border-color: var(--panel-border); background: var(--panel-alt); }
+  .sample-card.active { border-color: var(--accent); background: var(--panel-alt); }
+  .sample-card .id-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; gap: 6px; }
+  .sample-card .id { font-weight: 600; }
+  .sample-card .subject { color: var(--muted); line-height: 1.4; }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-bottom: 16px;
+  }
+  .card h2 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    margin: 0 0 10px;
+  }
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    font-family: ui-monospace, "SF Mono", Consolas, monospace;
+  }
+  .badge.answer { background: var(--good-bg); color: var(--good); }
+  .badge.escalate { background: var(--bad-bg); color: var(--bad); }
+  .badge.pass { background: var(--good-bg); color: var(--good); }
+  .badge.fail { background: var(--bad-bg); color: var(--bad); }
+  .kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 13px; }
+  .kv dt { color: var(--muted); }
+  .kv dd { margin: 0; }
+  .reason { font-size: 13px; margin-top: 10px; line-height: 1.5; }
+
+  /* outcome banner */
+  .outcome-banner { border-radius: 10px; padding: 16px 18px; margin-bottom: 16px; display: grid; grid-template-columns: 1fr 200px; gap: 16px; border: 1px solid; }
+  .outcome-banner.answer { background: var(--good-bg); border-color: var(--good); }
+  .outcome-banner.escalate { background: var(--bad-bg); border-color: var(--bad); }
+  .outcome-banner .headline { font-size: 15px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+  .outcome-banner .headline.answer-text-color { color: var(--good); }
+  .outcome-banner .headline.escalate-text-color { color: var(--bad); }
+  .outcome-banner .side-stats { border-left: 1px solid rgba(255,255,255,0.15); padding-left: 16px; font-size: 11px; }
+  .outcome-banner .side-stats .stat { margin-bottom: 10px; }
+  .outcome-banner .side-stats .stat .label { color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 2px; }
+  .outcome-banner .side-stats .stat .value { font-size: 15px; font-weight: 700; }
+  @media (max-width: 560px) { .outcome-banner { grid-template-columns: 1fr; } .outcome-banner .side-stats { border-left: none; border-top: 1px solid rgba(255,255,255,0.15); padding-left: 0; padding-top: 12px; } }
+
+  .runners-up { font-size: 12px; margin-top: 10px; }
+  .runners-up div { display: flex; justify-content: space-between; padding: 3px 0; color: var(--muted); }
+
+  .passage {
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    font-size: 12px;
+    overflow: hidden;
+  }
+  .passage.used { border-color: var(--good); }
+  .passage-head { padding: 10px 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .passage-head:hover { background: var(--panel-alt); }
+  .passage-head .doc-id { color: var(--accent); font-weight: 600; }
+  .passage-head .title { color: var(--muted); display: block; font-size: 11px; margin-top: 2px; }
+  .passage-head .score { color: var(--muted); white-space: nowrap; }
+  .passage-body { padding: 0 12px 12px; color: var(--muted); line-height: 1.5; display: none; }
+  .passage-body.open { display: block; }
+  .passage-body a { color: var(--accent); font-size: 11px; }
+  .used-tag { font-size: 10px; color: var(--good); font-weight: 700; text-transform: uppercase; }
+
+  .checks { font-size: 13px; }
+  .checks div { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid var(--panel-border); }
+  .checks div:last-child { border-bottom: none; }
+  .answer-text { font-size: 13px; line-height: 1.6; white-space: pre-wrap; }
+  .trace { font-size: 12px; }
+  .trace-row { display: grid; grid-template-columns: 90px 100px 1fr; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--panel-border); }
+  .trace-row:last-child { border-bottom: none; }
+  .trace-row .stage { color: var(--accent); font-weight: 600; }
+  .trace-row .reason { margin: 0; }
+  .empty { color: var(--muted); font-size: 13px; }
+
+  .token-input {
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    padding: 5px 8px;
+    font-size: 12px;
+    width: 130px;
+  }
+  .ks-message { font-size: 11px; min-width: 120px; }
+  .ks-message.ok { color: var(--good); }
+  .ks-message.error { color: var(--danger); }
+  .banner {
+    display: none;
+    background: var(--bad-bg);
+    color: var(--bad);
+    border: 1px solid var(--bad);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 13px;
+    margin-bottom: 14px;
+  }
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    z-index: 10;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 20px 22px;
+    max-width: 640px;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  .modal h3 { margin: 0 0 10px; font-size: 14px; }
+  .modal pre { white-space: pre-wrap; font-family: inherit; font-size: 13px; line-height: 1.6; margin: 0; }
+  .modal .close-btn { float: right; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>CloudServe Support Console</h1>
+    <div class="sub">One ticket, every decision the pipeline made about it.</div>
+  </div>
+  <div id="kill-switch" class="kill-switch">
+    <span class="dot"></span>
+    <span id="kill-switch-label">checking…</span>
+    <input id="admin-token-input" class="token-input" type="password" placeholder="X-Admin-Token" autocomplete="off">
+    <button id="halt-btn">Halt</button>
+    <button id="resume-btn">Resume</button>
+    <span id="ks-message" class="ks-message"></span>
+  </div>
+</header>
+
+<div id="modal-overlay" class="modal-overlay">
+  <div class="modal">
+    <button class="close-btn" id="modal-close">Close</button>
+    <h3 id="modal-title"></h3>
+    <pre id="modal-body"></pre>
+  </div>
+</div>
+
+<main>
+  <div id="kpi-banner" class="kpi-banner"></div>
+
+  <div id="error-banner" class="banner"></div>
+  <p class="picker-hint">Pick a ticket from the sidebar, or open <code>?ticket=VAL-0043</code> directly to link one decision.</p>
+
+  <div class="workspace">
+    <div class="sidebar">
+      <h2>Sample tickets</h2>
+      <div id="sample-list">Loading…</div>
+    </div>
+
+    <div id="middle-col">
+      <div id="empty-state" class="empty" style="padding: 20px;">Pick a ticket to see its routing decision.</div>
+      <div id="middle-content" style="display:none">
+        <div class="card">
+          <h2>Ticket as it arrived</h2>
+          <dl class="kv" id="ticket-kv"></dl>
+          <div class="reason" id="ticket-body"></div>
+        </div>
+
+        <div id="outcome-banner" class="outcome-banner">
+          <div>
+            <div id="outcome-headline" class="headline"></div>
+            <span id="outcome-rule-badge"></span>
+            <div class="reason" id="outcome-reason"></div>
+          </div>
+          <div class="side-stats">
+            <div class="stat"><div class="label">Latency</div><div class="value" id="stat-latency"></div></div>
+            <div class="stat"><div class="label">Threshold applied</div><div class="value" id="stat-threshold"></div></div>
+            <div class="stat"><div class="label">Generated by</div><div class="value" id="stat-backend"></div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Classification</h2>
+          <dl class="kv" id="classify-kv"></dl>
+          <div id="runners-up" class="runners-up"></div>
+        </div>
+
+        <div class="card">
+          <h2>Answer / escalation</h2>
+          <div id="answer" class="answer-text"></div>
+        </div>
+
+        <div class="card">
+          <h2>Guardrails</h2>
+          <div class="checks" id="guardrail-checks"></div>
+        </div>
+
+        <div class="card">
+          <h2>Decision trace</h2>
+          <div class="trace" id="trace"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="right-col">
+      <div class="card">
+        <h2>Retrieved passages</h2>
+        <div id="passages"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let currentSamples = [];
+
+/* ---------- kill switch ---------- */
+const tokenInput = $('admin-token-input');
+tokenInput.value = sessionStorage.getItem('admin_token') || '';
+tokenInput.addEventListener('input', () => sessionStorage.setItem('admin_token', tokenInput.value));
+
+function showKsMessage(text, isError) {
+  const el = $('ks-message');
+  el.textContent = text;
+  el.className = 'ks-message ' + (isError ? 'error' : 'ok');
+  setTimeout(() => { if (el.textContent === text) el.textContent = ''; }, 4000);
+}
+
+async function refreshKillSwitch() {
+  const res = await fetch('/admin/status');
+  const data = await res.json();
+  const el = $('kill-switch');
+  el.classList.toggle('halted', data.halted);
+  $('kill-switch-label').textContent = data.halted ? 'Automation halted' : 'Automation live';
+}
+
+async function callAdmin(path, successText) {
+  try {
+    const res = await fetch(path, { method: 'POST', headers: { 'X-Admin-Token': tokenInput.value } });
+    if (res.ok) {
+      showKsMessage(successText, false);
+    } else {
+      const body = await res.json().catch(() => ({}));
+      showKsMessage(`${res.status}: ${body.detail || 'request rejected'}`, true);
+    }
+  } catch (err) {
+    showKsMessage('Request failed -- is the API reachable?', true);
+  }
+  refreshKillSwitch();
+}
+
+$('halt-btn').onclick = () => callAdmin('/admin/halt', 'Halted');
+$('resume-btn').onclick = () => callAdmin('/admin/resume', 'Resumed');
+
+/* ---------- modal + error banner ---------- */
+function showModal(title, body) {
+  $('modal-title').textContent = title;
+  $('modal-body').textContent = body;
+  $('modal-overlay').classList.add('open');
+}
+$('modal-close').onclick = () => $('modal-overlay').classList.remove('open');
+$('modal-overlay').addEventListener('click', (e) => {
+  if (e.target.id === 'modal-overlay') $('modal-overlay').classList.remove('open');
+});
+
+function showError(text) {
+  const el = $('error-banner');
+  el.textContent = text;
+  el.style.display = text ? 'block' : 'none';
+}
+
+/* ---------- KPI banner ---------- */
+async function loadStats() {
+  const res = await fetch('/api/stats');
+  const data = await res.json();
+  const tiles = [];
+  if (data.available) {
+    const r = data.report;
+    tiles.push(['Automation rate', (r.business.automation_rate * 100).toFixed(1) + '%']);
+    tiles.push(['Escalation rate', (r.business.escalation_rate * 100).toFixed(1) + '%']);
+    tiles.push(['Intent accuracy', r.technical.intent_accuracy_vs_labels != null ? (r.technical.intent_accuracy_vs_labels * 100).toFixed(1) + '%' : '—']);
+    tiles.push(['Retrieval hit rate', (r.technical.retrieval_hit_rate * 100).toFixed(1) + '%']);
+  } else {
+    tiles.push(['Automation rate', '—']);
+    tiles.push(['Escalation rate', '—']);
+    tiles.push(['Intent accuracy', '—']);
+    tiles.push(['Retrieval hit rate', '—']);
+  }
+  tiles.push(['Decisions logged', data.decisions_logged_total]);
+  tiles.push(['Knowledge base', data.corpus_size + ' articles']);
+
+  $('kpi-banner').innerHTML = tiles.map(([label, value]) => `
+    <div class="kpi-tile">
+      <div class="label">${label}</div>
+      <div class="value">${value}</div>
+    </div>
+  `).join('');
+}
+
+/* ---------- sidebar samples ---------- */
+function ruleClass(action) {
+  return action === 'auto_respond' ? 'answer' : 'escalate';
+}
+
+async function loadSamples() {
+  const res = await fetch('/api/samples');
+  currentSamples = await res.json();
+  renderSampleList();
+
+  const params = new URLSearchParams(location.search);
+  const preselect = params.get('ticket');
+  if (preselect) {
+    loadTicket(preselect);
+  }
+}
+
+function renderSampleList(activeId) {
+  $('sample-list').innerHTML = currentSamples.map(t => `
+    <div class="sample-card ${t.ticket_id === activeId ? 'active' : ''}" data-id="${t.ticket_id}">
+      <div class="id-row">
+        <span class="id">${t.ticket_id}</span>
+        <span class="badge ${ruleClass(t.action)}">${t.rule}</span>
+      </div>
+      <div class="subject">${(t.subject || '').slice(0, 70)}</div>
+    </div>
+  `).join('');
+  $('sample-list').querySelectorAll('.sample-card').forEach(el =>
+    el.addEventListener('click', () => loadTicket(el.dataset.id))
+  );
+}
+
+/* ---------- passages ---------- */
+function togglePassage(idx) {
+  const body = document.querySelector(`.passage-body[data-idx="${idx}"]`);
+  if (body) body.classList.toggle('open');
+}
+
+async function viewFullArticle(docId) {
+  const res = await fetch(`/api/corpus/${encodeURIComponent(docId)}`);
+  if (!res.ok) { showError(`Could not load article ${docId} (${res.status}).`); return; }
+  const doc = await res.json();
+  showModal(`${doc.doc_id}: ${doc.title}`, doc.content);
+}
+
+function renderPassages(passages) {
+  if (!passages.length) {
+    $('passages').innerHTML = '<div class="empty">Nothing cleared the relevance threshold.</div>';
+    return;
+  }
+  $('passages').innerHTML = passages.map((p, idx) => `
+    <div class="passage ${p.used_in_answer ? 'used' : ''}">
+      <div class="passage-head" data-idx="${idx}">
+        <div>
+          <span class="doc-id">${p.doc_id}</span>
+          ${p.used_in_answer ? '<span class="used-tag"> used in answer</span>' : ''}
+          <span class="title">${p.title}</span>
+        </div>
+        <span class="score">${p.score.toFixed(3)}</span>
+      </div>
+      <div class="passage-body ${p.used_in_answer ? 'open' : ''}" data-idx="${idx}">
+        ${p.chunk_text.replace(/</g, '&lt;')}
+        <div><a href="#" data-doc="${p.doc_id}">Show the whole article &rarr;</a></div>
+      </div>
+    </div>
+  `).join('');
+
+  $('passages').querySelectorAll('.passage-head').forEach(el =>
+    el.addEventListener('click', () => togglePassage(el.dataset.idx))
+  );
+  $('passages').querySelectorAll('a[data-doc]').forEach(el =>
+    el.addEventListener('click', (e) => { e.preventDefault(); viewFullArticle(el.dataset.doc); })
+  );
+}
+
+/* ---------- ticket detail ---------- */
+function renderKV(el, pairs) {
+  el.innerHTML = pairs.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
+}
+
+async function loadTicket(ticketId) {
+  if (!ticketId) { $('middle-content').style.display = 'none'; $('empty-state').style.display = 'block'; return; }
+  showError('');
+  const res = await fetch(`/api/ticket/${encodeURIComponent(ticketId)}`);
+  if (!res.ok) { showError(`Could not load ticket ${ticketId} (${res.status}).`); return; }
+  const { ticket, outcome, trace, latency_ms } = await res.json();
+
+  $('empty-state').style.display = 'none';
+  $('middle-content').style.display = 'block';
+  renderSampleList(ticketId);
+
+  renderKV($('ticket-kv'), [
+    ['Channel', ticket.channel],
+    ['Tier', ticket.customer_tier || 'standard'],
+    ['Region', ticket.customer_region || 'unknown'],
+    ['Fluency', ticket.language_fluency || 'unknown'],
+  ]);
+  $('ticket-body').textContent = [ticket.subject, ticket.body].filter(Boolean).join(' — ');
+
+  const isAnswer = outcome.action === 'auto_respond';
+  const banner = $('outcome-banner');
+  banner.className = `outcome-banner ${isAnswer ? 'answer' : 'escalate'}`;
+  $('outcome-headline').className = `headline ${isAnswer ? 'answer-text-color' : 'escalate-text-color'}`;
+  $('outcome-headline').textContent = isAnswer ? 'Answered automatically' : 'Escalated to a human';
+  $('outcome-rule-badge').innerHTML = `<span class="badge ${ruleClass(outcome.action)}">${outcome.rule}</span>`;
+  $('outcome-reason').textContent = outcome.reason;
+  $('stat-latency').textContent = `${latency_ms} ms`;
+  $('stat-threshold').textContent = outcome.threshold_applied != null ? outcome.threshold_applied.toFixed(2) : '—';
+  $('stat-backend').textContent = outcome.answer_backend || 'n/a';
+
+  renderKV($('classify-kv'), [
+    ['Intent', `${outcome.intent} (${(outcome.intent_confidence * 100).toFixed(1)}%)`],
+    ['Urgency', outcome.urgency],
+    ['Priority', outcome.priority],
+  ]);
+  const alts = outcome.intent_alternatives || [];
+  $('runners-up').innerHTML = alts.length
+    ? '<div style="color:var(--muted); font-size:11px; text-transform:uppercase; margin-bottom:4px;">Runners-up</div>' +
+      alts.map(a => `<div><span>${a.value}</span><span>${(a.confidence * 100).toFixed(1)}%</span></div>`).join('')
+    : '';
+
+  renderPassages(outcome.retrieved_passages || []);
+
+  $('answer').textContent = outcome.answer_text || `Escalated to a human. Reason: ${outcome.reason}`;
+
+  const checks = outcome.guardrail_checks || {};
+  $('guardrail-checks').innerHTML = Object.keys(checks).length
+    ? Object.entries(checks).map(([name, result]) => {
+        const pass = result === 'pass';
+        return `<div><span>${name}</span><span class="badge ${pass ? 'pass' : 'fail'}">${result}</span></div>`;
+      }).join('')
+    : '<div class="empty">Guardrails only run on the auto-respond path.</div>';
+
+  $('trace').innerHTML = trace.length
+    ? trace.map(row => `
+        <div class="trace-row">
+          <span class="stage">${row.stage}</span>
+          <span>${row.action_taken}</span>
+          <p class="reason">${row.reason}</p>
+        </div>`).join('')
+    : '<div class="empty">No decisions logged yet.</div>';
+
+  history.replaceState(null, '', `?ticket=${encodeURIComponent(ticketId)}`);
+}
+
+loadSamples();
+loadStats();
+refreshKillSwitch();
+</script>
+</body>
+</html>

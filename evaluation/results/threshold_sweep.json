@@ -1,0 +1,163 @@
+{
+  "tickets_file": "./data\\development_tickets.json",
+  "results": [
+    {
+      "threshold": 0.3,
+      "labelled_tickets": 500,
+      "true_positive_auto_respond": 310,
+      "false_positive_auto_respond": 102,
+      "true_negative_escalate": 87,
+      "false_negative_escalate": 1,
+      "precision": 0.7524,
+      "recall": 0.9968,
+      "accuracy": 0.794,
+      "cost": 103
+    },
+    {
+      "threshold": 0.35,
+      "labelled_tickets": 500,
+      "true_positive_auto_respond": 310,
+      "false_positive_auto_respond": 102,
+      "true_negative_escalate": 87,
+      "false_negative_escalate": 1,
+      "precision": 0.7524,
+      "recall": 0.9968,
+      "accuracy": 0.794,
+      "cost": 103
+    },
+    {
+      "threshold": 0.4,
+      "labelled_tickets": 500,
+      "true_positive_auto_respond": 310,
+      "false_positive_auto_respond": 102,
+      "true_negative_escalate": 87,
+      "false_negative_escalate": 1,
+      "precision": 0.7524,
+      "recall": 0.9968,
+      "accuracy": 0.794,
+      "cost": 103
+    },
+    {
+      "threshold": 0.45,
+      "labelled_tickets": 500,
+      "true_positive_auto_respond": 310,
+      "false_positive_auto_respond": 102,
+      "true_negative_escalate": 87,
+      "false_negative_escalate": 1,
+      "precision": 0.7524,
+      "recall": 0.9968,
+      "accuracy": 0.794,
+      "cost": 103
+    },
+    {
+      "threshold": 0.5,
+      "labelled_tickets": 500,
+      "true_positive_auto_respond": 310,
+      "false_positive_auto_respond": 102,
+      "true_negative_escalate": 87,
+      "false_negative_escalate": 1,
+      "precision": 0.7524,
+      "recall": 0.9968,
+      "accuracy": 0.794,
+      "cost": 103
+    },
+    {
+      "threshold": 0.55,
+      "labelled_tickets": 500,
+      "true_positive_auto_respond": 308,
+      "false_positive_auto_respond": 102,
+      "true_negative_escalate": 87,
+      "false_negative_escalate": 3,
+      "precision": 0.7512,
+      "recall": 0.9904,
+      "accuracy": 0.79,
+      "cost": 105
+    },
+    {
+      "threshold": 0.6,
+      "labelled_tickets": 500,
+      "true_positive_auto_respond": 307,
+      "false_positive_auto_respond": 102,
+      "true_negative_escalate": 87,
+      "false_negative_escalate": 4,
+      "precision": 0.7506,
+      "recall": 0.9871,
+      "accuracy": 0.788,
+      "cost": 106
+    },
+    {
+      "threshold": 0.65,
+      "labelled_tickets": 500,
+      "true_positive_auto_respond": 306,
+      "false_positive_auto_respond": 102,
+      "true_negative_escalate": 87,
+      "false_negative_escalate": 5,
+      "precision": 0.75,
+      "recall": 0.9839,
+      "accuracy": 0.786,
+      "cost": 107
+    },
+    {
+      "threshold": 0.7,
+      "labelled_tickets": 500,
+      "true_positive_auto_respond": 305,
+      "false_positive_auto_respond": 102,
+      "true_negative_escalate": 87,
+      "false_negative_escalate": 6,
+      "precision": 0.7494,
+      "recall": 0.9807,
+      "accuracy": 0.784,
+      "cost": 108
+    },
+    {
+      "threshold": 0.75,
+      "labelled_tickets": 500,
+      "true_positive_auto_respond": 299,
+      "false_positive_auto_respond": 102,
+      "true_negative_escalate": 87,
+      "false_negative_escalate": 12,
+      "precision": 0.7456,
+      "recall": 0.9614,
+      "accuracy": 0.772,
+      "cost": 114
+    },
+    {
+      "threshold": 0.8,
+      "labelled_tickets": 500,
+      "true_positive_auto_respond": 287,
+      "false_positive_auto_respond": 99,
+      "true_negative_escalate": 90,
+      "false_negative_escalate": 24,
+      "precision": 0.7435,
+      "recall": 0.9228,
+      "accuracy": 0.754,
+      "cost": 123
+    },
+    {
+      "threshold": 0.85,
+      "labelled_tickets": 500,
+      "true_positive_auto_respond": 199,
+      "false_positive_auto_respond": 67,
+      "true_negative_escalate": 122,
+      "false_negative_escalate": 112,
+      "precision": 0.7481,
+      "recall": 0.6399,
+      "accuracy": 0.642,
+      "cost": 179
+    },
+    {
+      "threshold": 0.9,
+      "labelled_tickets": 500,
+      "true_positive_auto_respond": 0,
+      "false_positive_auto_respond": 0,
+      "true_negative_escalate": 189,
+      "false_negative_escalate": 311,
+      "precision": null,
+      "recall": 0.0,
+      "accuracy": 0.378,
+      "cost": 311
+    }
+  ],
+  "recommended_threshold": 0.3,
+  "recommended_reason": "Lowest weighted cost (103) across the swept range, where an auto-response on a must_not_auto_respond ticket costs 5x a false escalation."
+}

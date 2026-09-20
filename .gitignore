@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+
+# Virtual environment
+.venv/
+venv/
+
+# Secrets -- .env.example is the tracked template
+.env
+
+# Runtime artifacts (recreated by running the app / evaluation harness)
+storage/*.db
+storage/HALT
+evaluation/results/**/decisions.db
+evaluation/results/decisions.db
+
+# Editor/OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Empty placeholders, not yet populated
+.deepeval/

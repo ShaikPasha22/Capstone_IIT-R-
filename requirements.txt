@@ -1,0 +1,14 @@
+fastapi==0.104.0
+uvicorn==0.24.0
+pydantic==2.4.2
+python-dotenv==1.0.0
+scikit-learn==1.3.2
+numpy==1.26.4
+requests==2.31.0
+pytest==7.4.0
+httpx==0.25.2  # required by fastapi.testclient.TestClient, used in tests/test_api.py
+
+# Optional -- only needed if LANGSMITH_API_KEY is set (src/tracing.py).
+# Not installed by default so the core system has no network-dependent
+# dependency. Uncomment to enable tracing:
+# langsmith==0.1.147

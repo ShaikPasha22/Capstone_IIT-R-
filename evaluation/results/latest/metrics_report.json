@@ -1,0 +1,27 @@
+{
+  "run_at_utc": "2026-09-20T13:09:19.367253+00:00",
+  "input_file": "data/validation_tickets.json",
+  "volume": {
+    "tickets_processed": 80,
+    "auto_responded": 64,
+    "escalated": 16,
+    "blocked_by_guardrail": 0,
+    "errors": 0
+  },
+  "business": {
+    "automation_rate": 0.8,
+    "escalation_rate": 0.2
+  },
+  "technical": {
+    "intent_accuracy_vs_labels": 1.0,
+    "routing_agreement_vs_expected": 0.775,
+    "retrieval_hit_rate": 0.925,
+    "latency_seconds_p50": 0.0192,
+    "latency_seconds_p95": 0.0249
+  },
+  "governance": {
+    "decisions_logged": 304,
+    "guardrail_blocks": 0
+  },
+  "total_run_time_seconds": 1.56
+}
