@@ -26,11 +26,23 @@ DATA_DIR = os.getenv("DATA_DIR", "./data")
 STORAGE_DIR = os.path.dirname(os.getenv("DATABASE_PATH", "./storage/decisions.db")) or "./storage"
 CONFIDENCE_THRESHOLD = float(os.getenv("CONFIDENCE_THRESHOLD", "0.55"))
 ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "change-me")
+EXPOSE_ADMIN_TOKEN_ENDPOINT = os.getenv("EXPOSE_ADMIN_TOKEN_ENDPOINT", "true").lower() == "true"
 
 if ADMIN_TOKEN == "change-me":
     warnings.warn(
         "ADMIN_TOKEN is left at the default 'change-me'. Set a real value before "
         "exposing /admin/halt or /admin/resume outside a local machine.",
+        stacklevel=1,
+    )
+
+if EXPOSE_ADMIN_TOKEN_ENDPOINT:
+    warnings.warn(
+        "GET /admin/reveal-token is enabled and hands back the real ADMIN_TOKEN to "
+        "anyone who requests it -- there is no server-side gate on this endpoint, "
+        "only a client-side arithmetic puzzle in the console UI, which stops "
+        "nothing but casual browser use. This is a local-development convenience "
+        "only. Set EXPOSE_ADMIN_TOKEN_ENDPOINT=false before running this anywhere "
+        "reachable by more than your own machine.",
         stacklevel=1,
     )
 
@@ -216,6 +228,22 @@ def stats():
 @app.get("/admin/status")
 def admin_status():
     return {"halted": admin_module.is_halted(STORAGE_DIR)}
+
+
+@app.get("/admin/reveal-token")
+def admin_reveal_token():
+    """Local-dev convenience: hands back the real ADMIN_TOKEN.
+
+    There is deliberately no server-side check here beyond the
+    EXPOSE_ADMIN_TOKEN_ENDPOINT flag -- the arithmetic puzzle in the console
+    UI is a client-side speed bump, not authentication. Anyone who can reach
+    this URL at all gets the token, same as anyone who can read .env on this
+    machine. Set EXPOSE_ADMIN_TOKEN_ENDPOINT=false before running this
+    anywhere reachable by more than your own machine.
+    """
+    if not EXPOSE_ADMIN_TOKEN_ENDPOINT:
+        raise HTTPException(status_code=404, detail="Disabled (EXPOSE_ADMIN_TOKEN_ENDPOINT=false).")
+    return {"token": ADMIN_TOKEN}
 
 
 @app.post("/admin/halt")

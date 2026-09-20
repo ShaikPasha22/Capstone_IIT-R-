@@ -57,6 +57,16 @@ ticket to escalate, which is itself an incident if it happens by accident or
 by an attacker who found the default. Set a real value before running this
 anywhere reachable by more than your own machine.
 
+**`GET /admin/reveal-token` hands the real token back to anyone who asks.**
+The console's "Show" button on the token field solves an arithmetic puzzle
+before un-masking it, but that puzzle runs entirely in the browser -- it is
+not an access control, and `curl http://localhost:8000/admin/reveal-token`
+returns the token with no check at all beyond the `EXPOSE_ADMIN_TOKEN_ENDPOINT`
+flag. This is a local-development convenience, accepted as a deliberate
+trade-off. **Set `EXPOSE_ADMIN_TOKEN_ENDPOINT=false` in `.env` before running
+this anywhere reachable by more than your own machine** -- otherwise the
+token, and therefore the kill switch itself, has no real protection.
+
 ## After the incident
 - Check `/api/stats` or run `evaluation.harness` against a recent ticket
   batch to confirm the fix behaves as expected before resuming.

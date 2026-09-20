@@ -57,6 +57,12 @@ Every ticket then routes on rule R-00 (see `src/route.py`) and escalates, regard
 `POST /admin/resume`, or deleting `storage/HALT` directly if the API itself is down, turns it back
 on. See `docs/incident_response.md` for the full runbook.
 
+**`GET /admin/reveal-token`** backs the console's "Show" button on the token field (gated by a
+client-side puzzle, not real authentication) and returns the actual `ADMIN_TOKEN` to anyone who
+requests it. It's a local-dev convenience -- set `EXPOSE_ADMIN_TOKEN_ENDPOINT=false` in `.env`
+before running this anywhere reachable by more than your own machine, or the kill switch's token
+has no real protection.
+
 ## Reproducing the numbers
 
 | Command | What it establishes |

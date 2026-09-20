@@ -4,7 +4,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 from fastapi.testclient import TestClient
 
-from src.api import app, ADMIN_TOKEN, STORAGE_DIR
+from src.api import app, ADMIN_TOKEN, STORAGE_DIR, EXPOSE_ADMIN_TOKEN_ENDPOINT
 from src.admin import resume
 
 client = TestClient(app)
@@ -93,3 +93,12 @@ def test_stats_reports_unavailable_when_no_run_exists(tmp_path, monkeypatch):
     res = client.get("/api/stats")
     assert res.status_code == 200
     assert res.json()["available"] is False
+
+
+def test_reveal_token_returns_the_real_token_when_enabled():
+    res = client.get("/admin/reveal-token")
+    if EXPOSE_ADMIN_TOKEN_ENDPOINT:
+        assert res.status_code == 200
+        assert res.json() == {"token": ADMIN_TOKEN}
+    else:
+        assert res.status_code == 404
